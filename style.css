@@ -1,0 +1,818 @@
+/* nebula-palette — estilos propios. Los tokens y la base viven en assets/tokens.css.
+   La "chrome" usa solo la paleta Plutón; los colores generados son contenido y
+   llegan desde JS como --c (color) y --ink (tinta legible sobre ese color). */
+
+.layout {
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 400px;
+  align-content: center;
+  align-items: stretch;
+  gap: var(--s-6);
+}
+
+.studio {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* ---------- espécimen: nebulosa + muestras en una sola tarjeta ---------- */
+
+.specimen {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.stage {
+  position: relative;
+  height: clamp(240px, calc(100dvh - 470px), 440px);
+}
+
+.nebula {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+/* Viñeta: la nube se apaga hacia los bordes en vez de cortarse contra el marco */
+.nebula::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 52%, var(--bg) 100%);
+  pointer-events: none;
+}
+
+.nebula-layer {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 1100ms var(--ease-in-out);
+}
+
+.nebula-layer.is-on {
+  opacity: 1;
+}
+
+/* El gas se mezcla consigo mismo y luego se compone con el resto de la escena */
+.nebula-gas {
+  position: absolute;
+  inset: 0;
+  isolation: isolate;
+}
+
+/* Una capa por color, un 15 % más grande que la escena por cada lado (ver nebula.js) */
+.nebula-cloud {
+  position: absolute;
+  top: -15%;
+  left: -15%;
+  width: 130%;
+  max-width: none;
+  height: 130%;
+  mix-blend-mode: screen;
+}
+
+.nebula.is-drifting .nebula-cloud {
+  animation: nebula-drift var(--dur) var(--ease-in-out) var(--delay) infinite alternate;
+  will-change: transform;
+}
+
+@keyframes nebula-drift {
+  from {
+    transform: translate(0, 0) rotate(0deg) scale(1);
+  }
+  to {
+    transform: translate(var(--dx), var(--dy)) rotate(var(--dr)) scale(var(--ds));
+  }
+}
+
+.nebula-stars {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* Polvo: ruido fractal usado como máscara de una capa del color de fondo.
+   Es una imagen estática en su propia capa; el gas se mueve por debajo y el
+   filtro de turbulencia no vuelve a calcularse nunca. */
+.nebula-dust {
+  position: absolute;
+  inset: 0;
+  background: var(--bg);
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 700' preserveAspectRatio='none'%3E%3Cfilter id='n' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.0045 0.008' numOctaves='5' seed='11' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 -2.7 0 0 0 1.42'/%3E%3C/filter%3E%3Crect width='1200' height='700' filter='url(%23n)'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 700' preserveAspectRatio='none'%3E%3Cfilter id='n' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.0045 0.008' numOctaves='5' seed='11' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 -2.7 0 0 0 1.42'/%3E%3C/filter%3E%3Crect width='1200' height='700' filter='url(%23n)'/%3E%3C/svg%3E");
+  -webkit-mask-size: 170% 170%;
+  mask-size: 170% 170%;
+  transform: translateZ(0);
+}
+
+.nebula-star,
+.nebula-spark {
+  fill: var(--text);
+}
+
+.nebula-star.is-twinkling {
+  animation: nebula-twinkle var(--dur) var(--ease-in-out) var(--delay) infinite alternate;
+}
+
+/* Solo se declara el origen: el destino es la opacidad propia de cada estrella */
+@keyframes nebula-twinkle {
+  from {
+    opacity: 0.12;
+  }
+}
+
+.nebula.is-paused .nebula-cloud,
+.nebula.is-paused .nebula-star {
+  animation-play-state: paused;
+}
+
+/* Etiquetas sobre la nebulosa: llevan su propio fondo para no depender del color de la nube */
+.stage-hud {
+  position: absolute;
+  top: var(--s-3);
+  padding: 3px 10px;
+  background: rgba(13, 17, 23, 0.88);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  pointer-events: none;
+}
+
+.stage-hud--tl {
+  left: var(--s-3);
+}
+
+.stage-hud--tr {
+  right: var(--s-3);
+}
+
+/* ---------- muestras ---------- */
+
+.swatches {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--border);
+  list-style: none;
+}
+
+.swatch {
+  position: relative;
+  min-height: 150px;
+  background: var(--c);
+  color: var(--ink);
+  transition: background-color 700ms var(--ease-out) calc(var(--i) * 45ms);
+}
+
+.swatch-main {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-end;
+  gap: 2px;
+  width: 100%;
+  height: 100%;
+  min-height: inherit;
+  padding: var(--s-3);
+  background: transparent;
+  border: 0;
+  color: inherit;
+  text-align: left;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.swatch-index {
+  position: absolute;
+  top: var(--s-4);
+  left: var(--s-3);
+  font-size: var(--fs-xs);
+  line-height: 1.5;
+}
+
+/* El HEX y el aviso "copiado" ocupan la misma celda y se relevan con un fundido */
+.swatch-hex {
+  display: grid;
+  font-size: var(--fs-md);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.swatch-hex > span {
+  grid-area: 1 / 1;
+  transition: opacity var(--t-med) var(--ease-out);
+}
+
+.swatch-toast {
+  opacity: 0;
+}
+
+.swatch.is-copied .swatch-toast {
+  opacity: 1;
+}
+
+.swatch.is-copied .swatch-code {
+  opacity: 0;
+}
+
+.swatch-val {
+  font-size: 0.6875rem;
+  white-space: nowrap;
+}
+
+.swatch-name {
+  font-size: var(--fs-xs);
+  white-space: nowrap;
+}
+
+.swatch-lock {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 50%;
+  color: inherit;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.swatch-lock::before {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0;
+  transition: opacity var(--t-fast) var(--ease-out);
+}
+
+.swatch-lock:hover::before {
+  opacity: 0.1;
+}
+
+.swatch-lock[aria-pressed="true"]::before {
+  opacity: 0.18;
+}
+
+.swatch-lock svg {
+  position: relative;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform var(--t-med) var(--ease-spring);
+}
+
+.swatch-lock:active svg {
+  transform: scale(0.86);
+}
+
+.lock-closed,
+.swatch-lock[aria-pressed="true"] .lock-open {
+  display: none;
+}
+
+.swatch-lock[aria-pressed="true"] .lock-closed {
+  display: inline;
+}
+
+.swatch-lock[aria-pressed="true"] .lock-body {
+  fill: currentColor;
+}
+
+/* El foco se dibuja con la tinta de cada muestra: el azul del sistema se perdería sobre un azul */
+.swatch-main:focus-visible,
+.swatch-lock:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: -4px;
+}
+
+/* ---------- barra de herramientas ---------- */
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-3);
+  margin-top: var(--s-4);
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+  transform: none;
+}
+
+.btn:disabled:hover {
+  background: var(--surface);
+  border-color: var(--border);
+}
+
+/* Solo vive dentro del botón de acento: el borde es --accent-ink al 45 % */
+kbd {
+  padding: 1px 6px;
+  border: 1px solid rgba(26, 19, 12, 0.45);
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+}
+
+.field {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-3);
+  margin-left: auto;
+}
+
+.field-select {
+  position: relative;
+  display: inline-flex;
+  min-width: 0;
+}
+
+.field-select::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 14px;
+  width: 7px;
+  height: 7px;
+  border-right: 1.5px solid var(--text-2);
+  border-bottom: 1.5px solid var(--text-2);
+  transform: translateY(-70%) rotate(45deg);
+  pointer-events: none;
+}
+
+.field select {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 2.25rem 0 var(--s-3);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  transition: border-color var(--t-fast) var(--ease-out);
+}
+
+.field select:hover {
+  border-color: var(--border-strong);
+}
+
+.hint {
+  margin-top: var(--s-3);
+  line-height: 1.6;
+}
+
+.console.is-error,
+.console.is-error b {
+  color: var(--alert);
+}
+
+/* ---------- contraste ---------- */
+
+.contrast {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+  min-width: 0;
+  padding: var(--s-4);
+}
+
+.contrast-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s-1) var(--s-3);
+}
+
+h2.console {
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  line-height: 1.5;
+}
+
+.matrix {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.matrix th {
+  padding: 0;
+  font-weight: 400;
+}
+
+.matrix thead th {
+  height: 26px;
+  vertical-align: top;
+}
+
+.matrix tbody th,
+.matrix-corner {
+  width: 30px;
+  text-align: left;
+}
+
+.matrix-corner {
+  padding: 0;
+  font-size: 0.6875rem;
+  color: var(--text-2);
+  vertical-align: top;
+}
+
+.cx {
+  padding: 3px;
+  text-align: center;
+  vertical-align: top;
+}
+
+.cx--self {
+  color: var(--border-strong);
+  vertical-align: middle;
+}
+
+.cx-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: var(--fs-xs);
+  color: var(--text-2);
+}
+
+.cx-dot {
+  width: 12px;
+  height: 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: 50%;
+  transition: background-color 500ms var(--ease-out);
+}
+
+.cx-sample {
+  display: grid;
+  place-items: center;
+  height: 28px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  transition:
+    background-color 500ms var(--ease-out),
+    color 500ms var(--ease-out);
+}
+
+.cx-ratio {
+  display: block;
+  margin-top: 3px;
+  font-size: var(--fs-xs);
+  line-height: 1.35;
+}
+
+.cx-level {
+  display: block;
+  font-size: 0.6875rem;
+  line-height: 1.35;
+  white-space: nowrap;
+}
+
+[data-level="aaa"] {
+  --level: var(--accent);
+  --level-soft: var(--accent-soft);
+}
+
+[data-level="aa"] {
+  --level: var(--cold);
+  --level-soft: var(--cold-soft);
+}
+
+[data-level="aa-large"] {
+  --level: var(--text-2);
+  --level-soft: transparent;
+}
+
+[data-level="fail"] {
+  --level: var(--alert);
+  --level-soft: var(--alert-soft);
+}
+
+.cx-level,
+.legend span {
+  color: var(--level);
+}
+
+.pairs {
+  display: none;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pair {
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr) 82px;
+  align-items: center;
+  gap: var(--s-3);
+  min-height: 46px;
+  border-top: 1px solid var(--border);
+}
+
+.pair:first-child {
+  border-top: 0;
+}
+
+.pair-samples {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.pair .cx-sample {
+  width: 40px;
+  height: 30px;
+}
+
+.pair-ids {
+  font-size: var(--fs-xs);
+  color: var(--text-2);
+}
+
+.pair .cx-ratio {
+  margin: 0;
+  font-size: var(--fs-md);
+  text-align: right;
+}
+
+.pair .cx-level {
+  padding: 3px 0;
+  background: var(--level-soft);
+  border: 1px solid transparent;
+  border-radius: 999px;
+  text-align: center;
+}
+
+.pair .cx-level[data-level="aa-large"] {
+  border-color: var(--border);
+}
+
+.best {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  min-height: 0;
+}
+
+.best-sample {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  min-height: 60px;
+  padding: var(--s-3) var(--s-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-weight: 500;
+  text-align: center;
+  transition:
+    background-color 500ms var(--ease-out),
+    color 500ms var(--ease-out);
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-1) var(--s-4);
+  padding-top: var(--s-3);
+  border-top: 1px solid var(--border);
+  font-size: 0.6875rem;
+}
+
+/* ---------- exportar ---------- */
+
+.export {
+  width: min(560px, calc(100vw - 2rem));
+  max-height: calc(100dvh - 2rem);
+  padding: var(--s-5);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  color: var(--text);
+}
+
+.export[open] {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+  animation: export-in var(--t-med) var(--ease-out);
+}
+
+/* ::backdrop no hereda las variables de :root en todos los navegadores: es --bg al 80 % */
+.export::backdrop {
+  background: rgba(13, 17, 23, 0.8);
+}
+
+@keyframes export-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+}
+
+.export-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: -8px -8px -8px 0;
+}
+
+.icon-btn {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius);
+  color: var(--text-2);
+  transition: color var(--t-fast) var(--ease-out);
+}
+
+.icon-btn:hover {
+  color: var(--text);
+}
+
+.tabs {
+  display: flex;
+  gap: var(--s-1);
+  border-bottom: 1px solid var(--border);
+}
+
+.tab {
+  min-width: 72px;
+  min-height: 44px;
+  margin-bottom: -1px;
+  padding: 0 var(--s-4);
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--text-2);
+  transition:
+    color var(--t-fast) var(--ease-out),
+    border-color var(--t-fast) var(--ease-out);
+}
+
+.tab:hover {
+  color: var(--text);
+}
+
+.tab[aria-selected="true"] {
+  border-bottom-color: var(--accent);
+  color: var(--text);
+}
+
+.code-panel {
+  height: min(46dvh, 300px);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: auto;
+}
+
+.code {
+  margin: 0;
+  padding: var(--s-4);
+  font-size: var(--fs-sm);
+  line-height: 1.7;
+  white-space: pre;
+}
+
+.export-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-3);
+}
+
+.export-actions .console {
+  flex: 1 1 12rem;
+}
+
+/* ---------- una sola columna ---------- */
+
+@media (max-width: 1179px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+    align-content: start;
+    gap: var(--s-5);
+  }
+
+  .stage {
+    height: clamp(220px, 36dvh, 380px);
+  }
+
+  .best-sample {
+    min-height: 72px;
+  }
+}
+
+/* ---------- móvil: muestras en filas y contraste en lista ---------- */
+
+@media (max-width: 599px) {
+  .page {
+    gap: var(--s-4);
+  }
+
+  .stage {
+    height: clamp(150px, 21dvh, 200px);
+  }
+
+  /* Las dos etiquetas no caben en una línea a 360 px: una arriba y otra abajo */
+  .stage-hud--tr {
+    top: auto;
+    bottom: var(--s-3);
+  }
+
+  .swatches {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .swatch {
+    min-height: 52px;
+  }
+
+  .swatch-main {
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: var(--s-3);
+    padding: 0 56px 0 var(--s-4);
+  }
+
+  .swatch-index {
+    position: static;
+    min-width: 1ch;
+  }
+
+  .swatch-val {
+    margin-left: auto;
+  }
+
+  .swatch-name {
+    display: none;
+  }
+
+  .swatch-lock {
+    top: 4px;
+    right: 6px;
+  }
+
+  .toolbar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    margin-top: var(--s-3);
+  }
+
+  .field {
+    margin-left: 0;
+  }
+
+  .field-select {
+    flex: 1;
+  }
+
+  .hint {
+    display: none;
+  }
+
+  .matrix {
+    display: none;
+  }
+
+  .pairs {
+    display: block;
+  }
+}
+
+@media (hover: none) {
+  .hint,
+  .toolbar kbd {
+    display: none;
+  }
+}

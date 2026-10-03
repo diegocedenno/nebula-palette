@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>nebula-palette — paletas pintadas como nebulosas</title>
+  <meta name="description" content="Generador de paletas de color: cada paleta se pinta como una nebulosa animada. Bloquea colores, regenera con la barra espaciadora, exporta a CSS o JSON y verifica el contraste.">
+  <meta name="theme-color" content="#0d1117">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/tokens.css">
+  <link rel="stylesheet" href="style.css">
+  <script defer src="assets/starfield.js"></script>
+  <script defer src="js/color.js"></script>
+  <script defer src="js/palette.js"></script>
+  <script defer src="js/nebula.js"></script>
+  <script defer src="js/main.js"></script>
+</head>
+<body>
+  <div class="page">
+    <header class="page-head">
+      <a class="brand" href="./" aria-label="nebula-palette, inicio">
+        <svg viewBox="0 0 32 32" aria-hidden="true">
+          <ellipse cx="16" cy="16" rx="13.5" ry="6" fill="none" stroke="#8b949e" stroke-width="1.5" stroke-dasharray="1.5 3.2" stroke-linecap="round" transform="rotate(-24 16 16)"/>
+          <circle cx="12" cy="18.5" r="7" fill="#58a6ff" opacity="0.85"/>
+          <circle cx="20.5" cy="17" r="6.5" fill="#c9a27e" opacity="0.9"/>
+          <circle cx="16" cy="11" r="5.5" fill="#efe3d3" opacity="0.9"/>
+          <circle cx="27" cy="7" r="1.4" fill="#e6edf3"/>
+        </svg>
+        nebula-palette
+      </a>
+      <p class="console" id="status" role="status">status: <b>paleta lista</b></p>
+    </header>
+
+    <main class="layout">
+      <h1 class="sr-only">nebula-palette: generador de paletas pintadas como nebulosas</h1>
+
+      <section class="studio" aria-label="Paleta">
+        <div class="specimen">
+          <div class="stage">
+            <div class="nebula" id="nebula" role="img" aria-label="Nebulosa pintada con los cinco colores de la paleta"></div>
+            <p class="stage-hud stage-hud--tl console">armonía: <b id="applied">curada</b></p>
+            <p class="stage-hud stage-hud--tr console">bloqueados: <b id="lockcount">0/5</b></p>
+          </div>
+          <ol class="swatches" id="swatches" aria-label="Colores de la paleta"></ol>
+        </div>
+
+        <div class="toolbar">
+          <button type="button" class="btn btn--accent" id="regen">regenerar <kbd>espacio</kbd></button>
+          <button type="button" class="btn" id="undo" disabled>deshacer</button>
+          <label class="field">
+            <span class="console">armonía</span>
+            <span class="field-select">
+              <select id="scheme">
+                <option value="auto">al azar</option>
+                <option value="analogous">análogo</option>
+                <option value="complementary">complementario</option>
+                <option value="triad">tríada</option>
+                <option value="split">compl. dividido</option>
+                <option value="mono">monocromático</option>
+              </select>
+            </span>
+          </label>
+          <button type="button" class="btn" id="open-export" aria-haspopup="dialog">exportar</button>
+        </div>
+
+        <p class="hint console"><b>espacio</b> regenera · <b>1–5</b> bloquea · <b>Z</b> deshace · <b>E</b> exporta · clic copia el HEX</p>
+      </section>
+
+      <section class="contrast panel" aria-labelledby="contrast-title">
+        <div class="contrast-head">
+          <h2 class="console" id="contrast-title">contraste WCAG 2.x</h2>
+          <p class="console">pares AA: <b id="passes">0/10</b></p>
+        </div>
+
+        <table class="matrix" id="matrix">
+          <caption class="sr-only">Razón de contraste de cada color como texto (filas) sobre cada color como fondo (columnas)</caption>
+        </table>
+
+        <ul class="pairs" id="pairs" aria-label="Razón de contraste de cada par de colores"></ul>
+
+        <div class="best">
+          <p class="best-sample" id="best-sample">La luz tarda años en cruzar una nebulosa.</p>
+          <p class="console">mejor par: <b id="best-label">—</b></p>
+        </div>
+
+        <p class="legend mono">
+          <span data-level="aaa">AAA ≥ 7</span>
+          <span data-level="aa">AA ≥ 4,5</span>
+          <span data-level="aa-large">AA grande ≥ 3</span>
+          <span data-level="fail">falla &lt; 3</span>
+        </p>
+      </section>
+    </main>
+
+    <footer class="page-foot">
+      <span>nebula-palette · serie Plutón</span>
+      <span>hecho por <a href="https://github.com/diegocedenno">diegocedenno</a> · MIT</span>
+    </footer>
+  </div>
+
+  <dialog class="export" id="export" aria-labelledby="export-title">
+    <div class="export-head">
+      <h2 class="console" id="export-title">exportar paleta</h2>
+      <button type="button" class="icon-btn" id="export-close" aria-label="Cerrar">
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+
+    <div class="tabs" role="tablist" aria-label="Formato de exportación">
+      <button type="button" class="tab" role="tab" id="tab-css" data-format="css" aria-selected="true" aria-controls="code-panel">CSS</button>
+      <button type="button" class="tab" role="tab" id="tab-json" data-format="json" aria-selected="false" aria-controls="code-panel" tabindex="-1">JSON</button>
+    </div>
+
+    <div class="code-panel" id="code-panel" role="tabpanel" aria-labelledby="tab-css" tabindex="0">
+      <pre class="code mono"><code id="code"></code></pre>
+    </div>
+
+    <div class="export-actions">
+      <p class="console" id="export-msg" role="status">archivo: <b>nebula-palette.css</b></p>
+      <button type="button" class="btn" id="copy-code">copiar</button>
+      <button type="button" class="btn btn--accent" id="download">descargar</button>
+    </div>
+  </dialog>
+</body>
+</html>
