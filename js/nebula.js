@@ -1,7 +1,9 @@
 /* Nebulosa: pinta la paleta como nubes de gas en SVG.
    Cada color es una capa SVG con tres manchas de degradado radial (velo, cuerpo y
-   penacho) que se mezcla con las demás en modo "screen". Las manchas son
-   estáticas; lo que deriva, muy despacio, es la capa entera, con animaciones CSS
+   penacho) que se mezcla con las demás: en modo "screen" sobre el cielo oscuro y
+   en "multiply", como pigmento, sobre el papel del modo claro. Cada capa lleva
+   sus dos tintes como variables CSS y el tema elige cuál se ve, sin repintar.
+   Las manchas son estáticas; lo que deriva, muy despacio, es la capa entera, con animaciones CSS
    que solo tocan `transform`: el navegador la mueve en el compositor sin repintar.
    La textura de polvo es otra capa ESTÁTICA encima (ruido aplicado una vez como
    máscara), así que ningún filtro se recalcula por frame.
@@ -61,6 +63,15 @@
     return color.oklchToHex(0.5 + lch.l * 0.08, lch.c * 1.25 + 0.01, lch.h);
   }
 
+  // Sobre papel ocurre lo contrario: "multiply" no deja ver los colores muy claros
+  // y empasta los muy oscuros. Como pigmento se comprime la claridad hacia los
+  // medios tonos (sin alterar el orden) y se sube el croma en proporción, de modo
+  // que un gris sigue siendo gris.
+  function pigmentTint(hex) {
+    var lch = color.hexToOklch(hex);
+    return color.oklchToHex(0.3 + lch.l * 0.46, lch.c * 1.4, lch.h);
+  }
+
   function svgRoot(className, box) {
     return node("svg", {
       class: className,
@@ -94,9 +105,11 @@
         var svg = svgRoot("nebula-cloud", BOX);
         var fill = id + "-" + entry.i;
         var gradient = node("radialGradient", { id: fill }, node("defs", {}, svg));
-        var tint = gasTint(colors[entry.i]);
+        // El color del degradado lo pone style.css según el tema (.nebula-stop).
+        svg.style.setProperty("--gas-dark", gasTint(colors[entry.i]));
+        svg.style.setProperty("--gas-light", pigmentTint(colors[entry.i]));
         STOPS.forEach(function (stop) {
-          node("stop", { offset: stop[0], "stop-color": tint, "stop-opacity": stop[1] }, gradient);
+          node("stop", { class: "nebula-stop", offset: stop[0], "stop-opacity": stop[1] }, gradient);
         });
 
         function blob(x, y, rx, ry, rotation, opacity) {
@@ -165,9 +178,13 @@
       // que las estrellas midan lo mismo en un móvil que en un monitor ancho.
       var scale = Math.max(rect.width / WIDTH, rect.height / HEIGHT) || 0.65;
       var k = color.clamp(1 / scale, 0.9, 3);
-      var lightest = colors.slice().sort(function (a, b) {
+      var byLight = colors.slice().sort(function (a, b) {
         return color.luminance(b) - color.luminance(a);
-      })[0];
+      });
+      // Algunas estrellas toman un color de la paleta: el más claro sobre el cielo
+      // oscuro, el más oscuro (como tinta) sobre papel.
+      svg.style.setProperty("--tint-dark", byLight[0]);
+      svg.style.setProperty("--tint-light", byLight[byLight.length - 1]);
       var animate = !reduced();
 
       for (var i = 0; i < STARS; i++) {
@@ -196,7 +213,7 @@
           },
           svg
         );
-        if (rand() < 0.22) star.setAttribute("fill", lightest);
+        if (rand() < 0.22) star.classList.add("nebula-star--tint");
         if (animate && rand() < 0.2) {
           star.classList.add("is-twinkling");
           star.style.setProperty("--dur", (2.8 + rand() * 4).toFixed(1) + "s");

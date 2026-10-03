@@ -2,6 +2,35 @@
    La "chrome" usa solo la paleta Plutón; los colores generados son contenido y
    llegan desde JS como --c (color) y --ink (tinta legible sobre ese color). */
 
+/* Colores propios con su par oscuro / claro: velo de las etiquetas sobre la
+   nebulosa (--bg translúcido), borde del <kbd> (--accent-ink atenuado) y el
+   núcleo crema de la marca, que sobre papel necesita más cuerpo. */
+:root {
+  --veil: rgba(13, 17, 23, 0.88);
+  --kbd-line: rgba(26, 19, 12, 0.45);
+  --brand-core: var(--pluto-heart);
+}
+
+:root[data-theme="light"] {
+  --veil: rgba(244, 241, 236, 0.9);
+  --kbd-line: rgba(255, 250, 243, 0.55);
+  --brand-core: #dcc5a8;
+}
+
+/* ---------- marca ---------- */
+
+.brand-orbit {
+  stroke: var(--text-2);
+}
+
+.brand-core {
+  fill: var(--brand-core);
+}
+
+.brand-star {
+  fill: var(--text);
+}
+
 .layout {
   flex: 1;
   display: grid;
@@ -76,6 +105,20 @@
   mix-blend-mode: screen;
 }
 
+/* Sobre papel el gas es pigmento: se oscurece donde se solapa, como una acuarela */
+:root[data-theme="light"] .nebula-cloud {
+  mix-blend-mode: multiply;
+}
+
+/* Cada capa trae sus dos tintes desde nebula.js; el tema elige cuál se ve */
+.nebula-stop {
+  stop-color: var(--gas-dark);
+}
+
+:root[data-theme="light"] .nebula-stop {
+  stop-color: var(--gas-light);
+}
+
 .nebula.is-drifting .nebula-cloud {
   animation: nebula-drift var(--dur) var(--ease-in-out) var(--delay) infinite alternate;
   will-change: transform;
@@ -113,7 +156,15 @@
 
 .nebula-star,
 .nebula-spark {
-  fill: var(--text);
+  fill: var(--star);
+}
+
+.nebula-star--tint {
+  fill: var(--tint-dark);
+}
+
+:root[data-theme="light"] .nebula-star--tint {
+  fill: var(--tint-light);
 }
 
 .nebula-star.is-twinkling {
@@ -137,7 +188,7 @@
   position: absolute;
   top: var(--s-3);
   padding: 3px 10px;
-  background: rgba(13, 17, 23, 0.88);
+  background: var(--veil);
   border: 1px solid var(--border);
   border-radius: 999px;
   pointer-events: none;
@@ -319,10 +370,10 @@
   border-color: var(--border);
 }
 
-/* Solo vive dentro del botón de acento: el borde es --accent-ink al 45 % */
+/* Solo vive dentro del botón de acento: el borde es --accent-ink atenuado */
 kbd {
   padding: 1px 6px;
-  border: 1px solid rgba(26, 19, 12, 0.45);
+  border: 1px solid var(--kbd-line);
   border-radius: 4px;
   font-family: var(--font-mono);
   font-size: 0.6875rem;
@@ -620,9 +671,14 @@ h2.console {
   animation: export-in var(--t-med) var(--ease-out);
 }
 
-/* ::backdrop no hereda las variables de :root en todos los navegadores: es --bg al 80 % */
+/* ::backdrop no hereda las variables de :root en todos los navegadores, así que
+   lleva los colores escritos: --bg al 80 % en oscuro, un velo de tinta en claro. */
 .export::backdrop {
   background: rgba(13, 17, 23, 0.8);
+}
+
+:root[data-theme="light"] .export::backdrop {
+  background: rgba(27, 31, 36, 0.42);
 }
 
 @keyframes export-in {

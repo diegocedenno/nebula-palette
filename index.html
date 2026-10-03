@@ -7,6 +7,7 @@
   <meta name="description" content="Generador de paletas de color: cada paleta se pinta como una nebulosa animada. Bloquea colores, regenera con la barra espaciadora, exporta a CSS o JSON y verifica el contraste.">
   <meta name="theme-color" content="#0d1117">
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <script src="assets/theme.js"></script>
   <link rel="stylesheet" href="assets/tokens.css">
   <link rel="stylesheet" href="style.css">
   <script defer src="assets/starfield.js"></script>
@@ -20,15 +21,21 @@
     <header class="page-head">
       <a class="brand" href="./" aria-label="nebula-palette, inicio">
         <svg viewBox="0 0 32 32" aria-hidden="true">
-          <ellipse cx="16" cy="16" rx="13.5" ry="6" fill="none" stroke="#8b949e" stroke-width="1.5" stroke-dasharray="1.5 3.2" stroke-linecap="round" transform="rotate(-24 16 16)"/>
+          <ellipse class="brand-orbit" cx="16" cy="16" rx="13.5" ry="6" fill="none" stroke-width="1.5" stroke-dasharray="1.5 3.2" stroke-linecap="round" transform="rotate(-24 16 16)"/>
           <circle cx="12" cy="18.5" r="7" fill="#58a6ff" opacity="0.85"/>
           <circle cx="20.5" cy="17" r="6.5" fill="#c9a27e" opacity="0.9"/>
-          <circle cx="16" cy="11" r="5.5" fill="#efe3d3" opacity="0.9"/>
-          <circle cx="27" cy="7" r="1.4" fill="#e6edf3"/>
+          <circle class="brand-core" cx="16" cy="11" r="5.5" opacity="0.9"/>
+          <circle class="brand-star" cx="27" cy="7" r="1.4"/>
         </svg>
         nebula-palette
       </a>
       <p class="console" id="status" role="status">status: <b>paleta lista</b></p>
+      <button type="button" class="theme-toggle" data-theme-toggle role="switch" aria-checked="false" aria-label="Modo claro">
+        <span class="theme-toggle-thumb" aria-hidden="true">
+          <svg class="theme-toggle-moon" viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z" fill="currentColor"/></svg>
+          <svg class="theme-toggle-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.5" fill="currentColor"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </span>
+      </button>
     </header>
 
     <main class="layout">
