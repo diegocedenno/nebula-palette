@@ -4,7 +4,9 @@
 >
 > Un generador de paletas de color que pinta cada paleta como una nebulosa a la deriva. Bloquea colores, regenera con la barra espaciadora, exporta como variables CSS o JSON y verifica el contraste de cada par.
 
-![nebula-palette preview](docs/preview.png)
+**[Live demo · Demo en vivo →](https://diegocedenno.github.io/nebula-palette/)**
+
+[![nebula-palette preview](docs/preview.png)](https://diegocedenno.github.io/nebula-palette/)
 
 **[English](#english)** · **[Español](#español)**
 
