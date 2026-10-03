@@ -23,11 +23,12 @@
 - Checks all pairs against WCAG 2.x: a 5×5 matrix (a list on phones) with the ratio, the level — AAA, AA, AA large, fail — and a live "Aa" sample.
 - Exports `:root { --nebula-1: … }` or JSON, to the clipboard or as a file.
 - Undo steps back through the last 20 palettes. The palette, locks and scheme survive a reload, and the palette lives in the URL hash (`#232a52-5b4b8a-…`) so a link shares it.
+- A switch in the header flips between dark and light mode: the same sky redrawn as a star chart on paper, where the nebula turns from glowing gas into watercolor pigment. The choice is remembered and shared across the Plutón series.
 
 ### What makes it technically interesting
 
 - **Palettes are built in OKLCH, not RGB.** Hue comes from the scheme, lightness from a dark-to-light ramp (so there are always readable pairs), and chroma from one "vividness" value shaped to fade toward black and white. Out-of-gamut colors are mapped back to sRGB by reducing chroma with a binary search, which keeps hue and lightness intact instead of clipping channels.
-- **The gas never repaints.** Each color is its own SVG layer of radial-gradient blobs blended with `screen`. The blobs are static; the whole layer drifts with a CSS animation on `transform`, so the compositor does the work. The dust is fractal noise (`feTurbulence`) rasterized once as a mask image on a static layer — no filter is evaluated per frame.
+- **The gas never repaints.** Each color is its own SVG layer of radial-gradient blobs blended with `screen` (`multiply` on paper; each layer carries both tints as CSS variables, so switching theme repaints nothing in JavaScript). The blobs are static; the whole layer drifts with a CSS animation on `transform`, so the compositor does the work. The dust is fractal noise (`feTurbulence`) rasterized once as a mask image on a static layer — no filter is evaluated per frame.
 - **Deterministic art.** The layout of the cloud is seeded with a hash of the palette, so the same five colors always paint the same nebula.
 - **Honest contrast numbers.** Relative luminance and ratios follow WCAG 2.x, and ratios are truncated rather than rounded: 4.499 never shows up as a passing "4,50". Swatch ink is black or white, whichever wins — the worst case is √21 ≈ 4.58:1, always above AA.
 - **The space bar is not hijacked.** After a mouse or touch click the control drops focus so space keeps regenerating; when you navigate with Tab, space activates the focused control as usual.
@@ -68,11 +69,12 @@ It also works as-is on GitHub Pages.
 - Verifica todos los pares con WCAG 2.x: una matriz 5×5 (una lista en el móvil) con la razón, el nivel —AAA, AA, AA grande, falla— y una muestra «Aa» en vivo.
 - Exporta `:root { --nebula-1: … }` o JSON, al portapapeles o como archivo.
 - Deshacer recorre las últimas 20 paletas. La paleta, los bloqueos y el esquema sobreviven a una recarga, y la paleta viaja en el hash de la URL (`#232a52-5b4b8a-…`): un enlace basta para compartirla.
+- Un interruptor en la cabecera alterna entre modo oscuro y claro: el mismo cielo redibujado como carta estelar sobre papel, donde la nebulosa pasa de gas luminoso a pigmento de acuarela. La elección se recuerda y se comparte entre los proyectos de la serie Plutón.
 
 ### Qué lo hace interesante técnicamente
 
 - **Las paletas se construyen en OKLCH, no en RGB.** El tono lo dicta el esquema, la claridad sale de una rampa de oscuro a claro (así siempre hay pares legibles) y el croma de una única «viveza» que se atenúa hacia el negro y el blanco. Los colores fuera de gama vuelven a sRGB reduciendo el croma con una búsqueda binaria, que conserva tono y claridad en lugar de recortar canales.
-- **El gas no se repinta nunca.** Cada color es su propia capa SVG de manchas con degradado radial, mezcladas en modo `screen`. Las manchas son estáticas; lo que deriva es la capa entera, con una animación CSS de `transform`, así que el trabajo lo hace el compositor. El polvo es ruido fractal (`feTurbulence`) rasterizado una sola vez como máscara de una capa estática: ningún filtro se evalúa por frame.
+- **El gas no se repinta nunca.** Cada color es su propia capa SVG de manchas con degradado radial, mezcladas en modo `screen` (`multiply` sobre papel; cada capa lleva sus dos tintes como variables CSS, así que cambiar de tema no repinta nada desde JavaScript). Las manchas son estáticas; lo que deriva es la capa entera, con una animación CSS de `transform`, así que el trabajo lo hace el compositor. El polvo es ruido fractal (`feTurbulence`) rasterizado una sola vez como máscara de una capa estática: ningún filtro se evalúa por frame.
 - **Arte determinista.** La forma de la nube se siembra con un hash de la paleta: los mismos cinco colores pintan siempre la misma nebulosa.
 - **Números de contraste honestos.** La luminancia relativa y las razones siguen WCAG 2.x, y las razones se truncan en vez de redondearse: un 4,499 nunca aparece como un «4,50» que aprueba. La tinta de cada muestra es negro o blanco, el que gane; el peor caso es √21 ≈ 4,58:1, siempre por encima de AA.
 - **La barra espaciadora no queda secuestrada.** Tras un clic de ratón o de dedo el control suelta el foco y espacio sigue regenerando; si navegas con Tab, espacio activa el control enfocado, como siempre.
